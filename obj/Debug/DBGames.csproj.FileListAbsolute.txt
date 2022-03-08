@@ -1,0 +1,15 @@
+C:\Users\davidbd\source\repos\DBGames\obj\Debug\DBGames.csproj.AssemblyReference.cache
+C:\Users\davidbd\source\repos\DBGames\obj\Debug\DBGames.BreakOut.resources
+C:\Users\davidbd\source\repos\DBGames\obj\Debug\DBGames.Form1.resources
+C:\Users\davidbd\source\repos\DBGames\obj\Debug\DBGames.Properties.Resources.resources
+C:\Users\davidbd\source\repos\DBGames\obj\Debug\DBGames.csproj.GenerateResource.cache
+C:\Users\davidbd\source\repos\DBGames\obj\Debug\DBGames.csproj.CoreCompileInputs.cache
+C:\Users\davidbd\source\repos\DBGames\bin\Debug\DBGames.exe.config
+C:\Users\davidbd\source\repos\DBGames\bin\Debug\DBGames.exe
+C:\Users\davidbd\source\repos\DBGames\bin\Debug\DBGames.pdb
+C:\Users\davidbd\source\repos\DBGames\obj\Debug\DBGames.exe
+C:\Users\davidbd\source\repos\DBGames\obj\Debug\DBGames.pdb
+C:\Users\davidbd\source\repos\DBGames\obj\Debug\DBGames.Snake.resources
+C:\Users\davidbd\source\repos\DBGames\obj\Debug\DBGames.Tetris.resources
+C:\Users\davidbd\source\repos\DBGames\obj\Debug\DBGames.MineSweeper.resources
+C:\Users\davidbd\source\repos\DBGames\obj\Debug\DBGames.PacMan.resources
