@@ -117,8 +117,8 @@ namespace DBGames
         private void paintFlag(int pfx, int pfy)
         {
             if (visible[pfx, pfy]) return;
-            panelGraphics.FillRectangle(Brushes.LightGreen, new Rectangle(pfx * size, pfy * size, size - 1, size - 1));
-            panelGraphics.DrawString("F", new System.Drawing.Font("Microsoft YaHei UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0))), Brushes.Black, new Point(pfx * size, pfy * size));
+            panelGraphics.FillRectangle(Brushes.Gray, new Rectangle(pfx * size, pfy * size, size - 1, size - 1));
+            panelGraphics.DrawString("F", new System.Drawing.Font("Microsoft YaHei UI", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0))), Brushes.Red, new Point(pfx * size + 3, pfy * size + 1));
         }
 
         private void openSquare(int ox, int oy)
@@ -161,8 +161,8 @@ namespace DBGames
                     {
                         if (marked[i, j])
                         {
-                            panelGraphics.FillRectangle(Brushes.LightGreen, new Rectangle(i * size, j * size, size - 1, size - 1));
-                            panelGraphics.DrawString("F", new System.Drawing.Font("Microsoft YaHei UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0))), Brushes.Black, new Point(i * size, j * size));
+                            panelGraphics.FillRectangle(Brushes.Gray, new Rectangle(i * size, j * size, size - 1, size - 1));
+                            panelGraphics.DrawString("F", new System.Drawing.Font("Microsoft YaHei UI", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0))), Brushes.Red, new Point(i * size + 3, j * size + 1));
                         }
                         else panelGraphics.FillRectangle(Brushes.Gray, new Rectangle(i * size, j * size, size - 1, size - 1));
                     }

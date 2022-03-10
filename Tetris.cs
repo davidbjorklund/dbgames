@@ -13,18 +13,19 @@
  * 
  * V2:
  * created listeners and actions to button presses
- * left arrow moves block left if possible
+ * l arrow moves block l if possible
  * right arrow moves block right if possible
  * up arrow rotates block clock-wise if possible
  * created block and tile rotation (clock-wise and counter-clock-wise)
- * created block and tile movement width direction (left -1, right 1)
+ * created block and tile movement width direction (l -1, right 1)
  * created method to check for filled row (checkTetris)
  * created method to clear tetris row and move tiles above down
  * 
+ * V3:
+ * Wallkick - Super Rotation System
+ * 
  * Todo:
- * Offset in rotation
- * Better axis of rotation for I and O block
- * Test game over
+ * Game over
  * 
  */
 
@@ -47,7 +48,6 @@ namespace DBGames
         public Tetris()
         {
             InitializeComponent();
-
         }
         public int width = 10;
         public int height = 16;
@@ -55,13 +55,21 @@ namespace DBGames
         public List<Tile> tileList = new List<Tile>();
         public Block b;
         public Block nextb;
+        public Block holdb;
         private Random chance = new Random();
-
-        private Dictionary<string, int[,]> wallkick = new Dictionary<string, int[,]>();
-
 
         private Rectangle[,] background = new Rectangle[10, 16];
         private Rectangle[,] backgroundNext = new Rectangle[5, 5];
+
+        Dictionary<string, int[,]> srs;
+        Dictionary<string, int[,]> isrs;
+
+        string[,] states = new string[4, 4] {
+            {"","zr","","zl"},
+            {"rz","","rt",""},
+            {"","tr","","tl"},
+            {"lz","","lt",""}
+        };
 
         public int validSquare(int x, int y)
         {
@@ -82,19 +90,29 @@ namespace DBGames
             return true;
         }
 
-        private void tryOffset(string blocktype = "O", int prevstate = 0, int newstate = 1)
+        private void tryOffset(string blocktype = "O", int newstate = 0, int prevstate = 1)
         {
             if (blocktype == "O") return;
             if (blocktype == "I")
             {
+
+                shift(isrs["i" + states[prevstate, newstate]]);
                 return;
             }
+            shift(srs[states[prevstate, newstate]]);
+        }
+
+        private bool shift(int[,] shiftArray)
+        {
             for (int i = 0; i < 5; i++)
             {
-                if (wallkick[prevstate.ToString() + newstate.ToString()][i, 0] == 0) continue;
+                if (blockIsValid(shiftArray[i, 0], shiftArray[i, 1]) == true)
+                {
+                    b.move(shiftArray[i, 0], shiftArray[i, 1]);
+                    return true;
+                }
             }
-
-
+            return false;
         }
 
         private void panel_Paint(object sender, PaintEventArgs e)
@@ -143,10 +161,15 @@ namespace DBGames
             b = new Block(chance.Next(0, 7));
             nextb = new Block(chance.Next(0, 7));
 
-            int[,] zeroone = new int[5, 2] { { 0, 0 }, { -1, 0 }, { -1, 1 }, { 0, -2 }, { -1, -2 } };
-            //wallkick.Add("01",zeroone);
+            srs = new Srs().data;
+            isrs = new Isrs().data;
 
             panel.Invalidate();
+        }
+
+        private void test(object obj)
+        {
+            obj.ToString();
         }
 
         private void lblStart_Click(object sender, EventArgs e)
@@ -191,6 +214,7 @@ namespace DBGames
 
         private void clearRow(int row)
         {
+            lblPoints.Text = (Convert.ToInt32(lblPoints.Text) + 82).ToString();
             for (int i = tileList.Count - 1; i >= 0; i--)
             {
                 if (tileList[i].y == row)
@@ -204,11 +228,33 @@ namespace DBGames
             }
         }
 
+        private void placeInHold()
+        {
+            if (holdb == null)
+            {
+                holdb = new Block(b.typeint);
+                b = null;
+                changeBlock();
+            }
+            else
+            {
+                int holdtypeint = b.typeint;
+                b = holdb;
+                holdb = new Block(holdtypeint);
+            }
+            panelHold.Invalidate();
+            panelNext.Invalidate();
+            panel.Invalidate();
+        }
+
         private void changeBlock()
         {
-            foreach (Tile tile in b.blockTileList)
+            if (b != null)
             {
-                tileList.Add(tile);
+                foreach (Tile tile in b.blockTileList)
+                {
+                    tileList.Add(tile);
+                }
             }
             b = nextb;
             nextb = new Block(chance.Next(0, 7));
@@ -231,7 +277,7 @@ namespace DBGames
                     break;
                 case Keys.Up:
                     b.rotate(true);
-                    //if (!blockIsValid()) tryOffset(b.type,b.state,(b.state-1+4)%4);
+                    if (!blockIsValid()) tryOffset(b.type, b.state, b.prevstate);
                     if (!blockIsValid()) b.rotate(false);
                     panel.Invalidate();
                     break;
@@ -240,6 +286,9 @@ namespace DBGames
                     break;
                 case Keys.Space:
                     while (blockIsValid(0, 1)) b.moveBlock();
+                    break;
+                case Keys.Tab:
+                    placeInHold();
                     break;
             }
         }
@@ -261,6 +310,29 @@ namespace DBGames
             foreach (Tile nextTile in nextb.blockTileList)
             {
                 panelNextGraphics.FillRectangle(nextTile.color, new Rectangle((nextTile.x - 3) * size + 1, (nextTile.y + 1) * size + 1, size - 1, size - 1));
+            }
+        }
+
+        private void panelHold_Paint(object sender, PaintEventArgs e)
+        {
+            Graphics panelNextGraphics = e.Graphics;
+
+            Brush backcolor = Brushes.Gray;
+
+            for (int i = 0; i < 5; i++)
+            {
+                for (int j = 0; j < 5; j++)
+                {
+                    panelNextGraphics.FillRectangle(backcolor, backgroundNext[i, j]);
+                }
+            }
+
+            if (holdb != null)
+            {
+                foreach (Tile nextTile in holdb.blockTileList)
+                {
+                    panelNextGraphics.FillRectangle(nextTile.color, new Rectangle((nextTile.x - 3) * size + 1, (nextTile.y + 1) * size + 1, size - 1, size - 1));
+                }
             }
         }
     }
@@ -291,9 +363,10 @@ namespace DBGames
             updateRectangle();
         }
 
-        public void move(int dir)
+        public void move(int dx = 0, int dy = 0)
         {
-            x += dir;
+            x += dx;
+            y += dy;
             updateRectangle();
         }
 
@@ -311,7 +384,9 @@ namespace DBGames
     {
         public List<Tile> blockTileList = new List<Tile>();
         public string type;
+        public int typeint;
         public int state = 0;
+        public int prevstate = 0;
 
         private Brush color;
         private double centerx;
@@ -326,6 +401,7 @@ namespace DBGames
         private int[,] Z = new int[4, 2] { { 4, 0 }, { 5, 0 }, { 5, 1 }, { 6, 1 } };
         public Block(int typeNum = 0)
         {
+            typeint = typeNum;
             createType(typeNum);
         }
 
@@ -338,13 +414,14 @@ namespace DBGames
             centery++;
         }
 
-        public void move(int dir)
+        public void move(int dx, int dy = 0)
         {
             foreach (Tile tile in blockTileList)
             {
-                tile.move(dir);
+                tile.move(dx, dy);
             }
-            centerx += dir;
+            centerx += dx;
+            centery += dy;
         }
 
         private void createTiles(int[,] typeArrays)
@@ -362,6 +439,7 @@ namespace DBGames
             {
                 tile.rotate(cw, centerx, centery);
             }
+            prevstate = state;
             state = cw ? state + 1 : state - 1;
             state = (state + 4) % 4;
         }
@@ -419,4 +497,58 @@ namespace DBGames
             }
         }
     }
+
+    public class Srs
+    {
+        int[,] zr = new int[5, 2] { { 0, 0 }, { -1, 0 }, { -1, 1 }, { 0, -2 }, { -1, -2 } };
+        int[,] rz = new int[5, 2] { { 0, 0 }, { 1, 0 }, { 1, -1 }, { 0, 2 }, { 1, 2 } };
+        int[,] rt = new int[5, 2] { { 0, 0 }, { 1, 0 }, { 1, -1 }, { 0, 2 }, { 1, 2 } };
+        int[,] tr = new int[5, 2] { { 0, 0 }, { -1, 0 }, { -1, 1 }, { 0, -2 }, { -1, -2 } };
+        int[,] tl = new int[5, 2] { { 0, 0 }, { 1, 0 }, { 1, 1 }, { 0, -2 }, { 1, -2 } };
+        int[,] lt = new int[5, 2] { { 0, 0 }, { -1, 0 }, { -1, -1 }, { 0, 2 }, { -1, 2 } };
+        int[,] lz = new int[5, 2] { { 0, 0 }, { -1, 0 }, { -1, -1 }, { 0, 2 }, { -1, 2 } };
+        int[,] zl = new int[5, 2] { { 0, 0 }, { 1, 0 }, { 1, 1 }, { 0, -2 }, { 1, -2 } };
+
+        public Dictionary<string, int[,]> data = new Dictionary<string, int[,]>();
+
+        public Srs()
+        {
+
+            data.Add("zr", zr);
+            data.Add("rz", rz);
+            data.Add("lz", lz);
+            data.Add("zl", zl);
+            data.Add("tl", tl);
+            data.Add("lt", lt);
+            data.Add("rt", rt);
+            data.Add("tr", tr);
+        }
+    }
+
+    public class Isrs
+    {
+        int[,] izr = new int[5, 2] { { 0, 0 }, { -2, 0 }, { 1, 0 }, { -2, -1 }, { 1, 2 } };
+        int[,] irz = new int[5, 2] { { 0, 0 }, { 2, 0 }, { -1, 0 }, { 2, 1 }, { -1, -2 } };
+        int[,] irt = new int[5, 2] { { 0, 0 }, { -1, 0 }, { 2, 0 }, { -1, 2 }, { 2, -1 } };
+        int[,] itr = new int[5, 2] { { 0, 0 }, { 1, 0 }, { -2, 0 }, { 1, -2 }, { -2, 1 } };
+        int[,] itl = new int[5, 2] { { 0, 0 }, { 2, 0 }, { -1, 0 }, { 2, 1 }, { -1, -2 } };
+        int[,] ilt = new int[5, 2] { { 0, 0 }, { -2, 0 }, { 1, 0 }, { -2, -1 }, { 1, 2 } };
+        int[,] ilz = new int[5, 2] { { 0, 0 }, { 1, 0 }, { -2, 0 }, { 1, -2 }, { -2, 1 } };
+        int[,] izl = new int[5, 2] { { 0, 0 }, { -1, 0 }, { 2, 0 }, { -1, 2 }, { 2, -1 } };
+
+        public Dictionary<string, int[,]> data = new Dictionary<string, int[,]>();
+
+        public Isrs()
+        {
+            data.Add("izr", izr);
+            data.Add("irz", irz);
+            data.Add("ilz", ilz);
+            data.Add("izl", izl);
+            data.Add("itl", itl);
+            data.Add("ilt", ilt);
+            data.Add("irt", irt);
+            data.Add("itr", itr);
+        }
+    }
+
 }

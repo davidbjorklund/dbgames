@@ -98,7 +98,7 @@ namespace DBGames
             hideGameOver();
             x = 325 / 2;
             y = 360;
-            dx = 3;
+            dx = 0;
             dy = -3;
             ballsize = 5;
             playerx = 325 / 2;
@@ -170,7 +170,13 @@ namespace DBGames
             {
                 if (ball.IntersectsWith(blockList[i].rect))
                 {
-                    if (blockList[i].by > y || blockList[i].by + size / 2 - 4 < y) dy = -dy;
+                    /*if (blockList[i].by > y || blockList[i].by + size / 2 - 4 < y) dy = -dy;
+                    else dx = -dx;*/
+                    double topDif = Math.Abs(blockList[i].by - (y + ballsize));
+                    double botDif = Math.Abs((blockList[i].by + (size / 2 - 1)) - y);
+                    double leftDif = Math.Abs(blockList[i].bx - (x + ballsize));
+                    double rightDif = Math.Abs((blockList[i].bx + size - 2) - x);
+                    if (topDif < leftDif && topDif < rightDif || botDif < leftDif && botDif < rightDif) dy = -dy;
                     else dx = -dx;
                     blockList.RemoveAt(i);
                     panel1.Invalidate();
@@ -179,7 +185,10 @@ namespace DBGames
             }
             if (ball.IntersectsWith(playerrect))
             {
-                dy = -dy;
+                dy = -Math.Abs(dy);
+                double fromCenter = (x + (ballsize / 2)) - (playerrect.X + (playerrect.Width / 2));
+                double prop = (fromCenter / (size + 7.5));
+                if (Math.Abs(prop) >= 0.15) dx = (int)(7 * prop);
             }
         }
 

@@ -112,7 +112,7 @@ namespace DBGames
             this.Controls.Add(this.lblTetris);
             this.Controls.Add(this.lblBreakOut);
             this.Name = "Form1";
-            this.Text = "Form1";
+            this.Text = "DBGames";
             this.Load += new System.EventHandler(this.Form1_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
