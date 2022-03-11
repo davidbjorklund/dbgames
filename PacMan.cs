@@ -138,7 +138,12 @@ namespace DBGames
 
         private void drawPac()
         {
-            g.FillRectangle(Brushes.Yellow, new Rectangle(16 * x, 16 * y, 16, 16));
+            g.FillPie(Brushes.Yellow,16 * x, 16 * y, 16, 16,0,360);
+            if ((x + y) % 2 == 0) return;
+            if (dx == 1) g.FillPie(Brushes.Black, 16 * x, 16 * y, 16, 16, -45, 90);
+            if (dx == -1) g.FillPie(Brushes.Black, 16 * x, 16 * y, 16, 16, 135, 90);
+            if (dy == 1) g.FillPie(Brushes.Black, 16 * x, 16 * y, 16, 16, 45, 90);
+            if (dy == -1) g.FillPie(Brushes.Black, 16 * x, 16 * y, 16, 16, 225, 90);
         }
 
         private void eraseGhost(int gx, int gy)
@@ -204,6 +209,18 @@ namespace DBGames
             nextdy = 0;
         }
 
+        private void checkCollision()
+        {
+            foreach(Ghost ghoul in ghostList)
+            {
+                if (ghoul.x == x && ghoul.y == y)
+                {
+                    gameTimer.Stop();
+                    panel1.Invalidate();
+                }
+            }
+        }
+
         private void gameTimer_Tick(object sender, EventArgs e)
         {
             if (isPaused) return;
@@ -214,14 +231,14 @@ namespace DBGames
                 eraseGhost(ghoul.x, ghoul.y);
                 if (grid[ghoul.y, ghoul.x] == 2) drawFood(ghoul.x, ghoul.y);
                 if (grid[ghoul.y, ghoul.x] == 3) drawBigFood(ghoul.x, ghoul.y);
-                ghoul.move(hasChoice,valid);
+                ghoul.move(hasChoice,valid,chance.Next(0, 2));
                 drawGhost(ghoul.x, ghoul.y, ghoul.color);
             }
+            checkCollision();
         }
     }
     public class Ghost
     {
-        Random chance = new Random();
         public int x;
         public int y;
         public int dx = 1;
@@ -238,7 +255,7 @@ namespace DBGames
             y = ghosty;
             color = ghostcolor;
         }
-        public void move(Func<int, int, bool> hasChoice, Func<int, int, bool> valid)
+        public void move(Func<int, int, bool> hasChoice, Func<int, int, bool> valid, int randint = 0)
         {
             if (isActive == false)
             {
@@ -252,7 +269,7 @@ namespace DBGames
                 if (dy == 1) dir = 2;
                 if (dx == -1) dir = 3;
                 if (dx == 1) dir = 1;
-                if (chance.Next(0, 2) == 0) dir = (dir - 1 + 4) % 4;
+                if (randint == 0) dir = (dir - 1 + 4) % 4;
                 else dir = (dir + 1) % 4;
                 nextdx = udlr[dir, 0];
                 nextdy = udlr[dir, 1];
