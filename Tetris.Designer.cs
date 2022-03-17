@@ -130,7 +130,7 @@ namespace DBGames
             this.Controls.Add(this.lblStart);
             this.Controls.Add(this.panel);
             this.Name = "Tetris";
-            this.Text = "Tetris";
+            this.Text = "Form1";
             this.Load += new System.EventHandler(this.Form1_Load);
             this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.Tetris_KeyDown);
             this.ResumeLayout(false);
